@@ -2,45 +2,113 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#194c40">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f2e7">
   <meta name="description" content="点击圣诞袜，写下想要的礼物。把小小心愿，寄往北极。">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="圣诞心愿邮局 · 把心愿装进圣诞袜">
+  <meta property="og:description" content="点击圣诞袜，写下今年想要的礼物，寄往北极。">
+  <meta property="og:image" content="https://leongsaifei.github.io/christmas-wish-stocking/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <title>圣诞心愿邮局 · 把心愿装进圣诞袜</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="preload" href="./fonts/title.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="./style.css">
   <script src="./config.js" defer></script>
   <script src="./app.js" type="module"></script>
 </head>
 <body>
+  <!-- 图标集：统一 1.5 线宽，颜色跟随 currentColor，各平台显示一致 -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 1.5 13.6 9l6.9-3.6L15.7 11l6.8 1-6.8 1 4.8 5.6-6.9-3.6L12 22.5 10.4 15l-6.9 3.6L8.3 13 1.5 12l6.8-1-4.8-5.6L10.4 9Z" fill="currentColor"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2c.6 5.4 4.6 9.4 10 10-5.4.6-9.4 4.6-10 10-.6-5.4-4.6-9.4-10-10 5.4-.6 9.4-4.6 10-10Z" fill="currentColor"/></symbol>
+    <symbol id="i-spark-line" viewBox="0 0 24 24"><path d="M12 2.5c.6 5 4.5 8.9 9.5 9.5-5 .6-8.9 4.5-9.5 9.5-.6-5-4.5-8.9-9.5-9.5 5-.6 8.9-4.5 9.5-9.5Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></symbol>
+    <symbol id="i-snow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7"/><path d="m9 3.5 3 2 3-2m-6 17 3-2 3 2M4.2 10.2l2.7-1.6-.2-3.4m12.5 13.6.2-3.4 2.7-1.6M4.2 13.8l2.7 1.6-.2 3.4M19.8 10.2l-2.7-1.6.2-3.4"/></g></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5"/><path d="M8 11H5.5v9.5h13V11H16"/></g></symbol>
+    <symbol id="i-letter" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="2.75" y="5.25" width="18.5" height="13.5" rx="1.5"/><path d="m3.5 6.5 8.5 7 8.5-7"/></g></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></g></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="8.5" y="8.5" width="12" height="12" rx="1.5"/><path d="M15.5 8.5v-3a1.5 1.5 0 0 0-1.5-1.5H5A1.5 1.5 0 0 0 3.5 5.5V14A1.5 1.5 0 0 0 5 15.5h3.5"/></g></symbol>
+  </svg>
+
   <div class="snow" id="snow" aria-hidden="true"></div>
+
   <header class="header">
-    <a class="brand" href="./" aria-label="圣诞心愿邮局首页"><span class="brand-icon">✷</span><span>圣诞心愿邮局<small>THE CHRISTMAS POST</small></span></a>
-    <nav aria-label="页面操作"><button class="text-button" id="snow-toggle" aria-pressed="true"><span aria-hidden="true">❄</span> <span id="snow-label">雪花已开启</span></button><button class="share-button" id="share"><span aria-hidden="true">↗</span> 分享这份圣诞</button></nav>
+    <a class="brand" href="./" aria-label="圣诞心愿邮局首页">
+      <svg class="brand-icon" aria-hidden="true"><use href="#i-star"/></svg>
+      <span>圣诞心愿邮局<small>The Christmas Post</small></span>
+    </a>
+    <nav aria-label="页面操作">
+      <button class="icon-text" id="snow-toggle" type="button" aria-pressed="true"><svg aria-hidden="true"><use href="#i-snow"/></svg><span id="snow-label">雪花已开启</span></button>
+      <button class="share-button" id="share" type="button"><svg aria-hidden="true"><use href="#i-share"/></svg><span>分享</span></button>
+    </nav>
   </header>
+
   <main>
     <section class="hero" aria-labelledby="hero-title">
-      <svg class="garland" viewBox="0 0 1200 100" fill="none" preserveAspectRatio="none" aria-hidden="true"><path d="M-20 15 Q300 120 600 35 Q900 120 1220 15" stroke="#355c4a" stroke-width="2"/><g class="bulbs"><path d="M80 42v13m145 17v14m149-9v12m147-34v16m160-19v16m150 10v14m147-5v12m143-39v14" stroke="#355c4a" stroke-width="2"/><g fill="#d8ad57"><ellipse cx="80" cy="61" rx="5" ry="8"/><ellipse cx="374" cy="95" rx="5" ry="8"/><ellipse cx="681" cy="74" rx="5" ry="8"/><ellipse cx="978" cy="93" rx="5" ry="8"/></g><g fill="#b6413c"><ellipse cx="225" cy="92" rx="5" ry="8"/><ellipse cx="521" cy="77" rx="5" ry="8"/><ellipse cx="831" cy="97" rx="5" ry="8"/><ellipse cx="1121" cy="66" rx="5" ry="8"/></g></g></svg>
-      <div class="eyebrow"><span></span> NORTH POLE MAIL SERVICE <span></span></div>
+      <p class="eyebrow">North Pole Mail Service</p>
       <h1 id="hero-title">把小小心愿，<br>装进<span>圣诞袜</span>。</h1>
       <p class="intro">有些期待，值得被悄悄珍藏。<br class="mobile-break">今年圣诞，你想收到什么？</p>
+
       <div class="stocking-scene">
-        <div class="orbit" aria-hidden="true"></div>
-        <div class="side-note left-note" aria-hidden="true"><span class="little-star">✧</span><p>一份礼物<br>一个值得期待的冬天</p><svg viewBox="0 0 100 50"><path d="M5 5Q25 50 90 30m-13-5 14 5-10 10"/></svg></div>
-        <div class="postmark" aria-hidden="true"><span>北 极 邮 局</span><b>DEC<br>25</b><small>WITH LOVE · 圣诞特快</small></div>
-        <span class="spark spark-one" aria-hidden="true">✦</span><span class="spark spark-two" aria-hidden="true">✧</span>
-        <button class="stocking-button" id="open-stocking" aria-label="打开圣诞袜，填写你的礼物愿望">
-          <svg class="stocking-art" viewBox="0 0 360 420" role="img" aria-label="红色针织圣诞袜，带奶油色毛绒袜口、金色铃铛和冬青叶">
+        <div class="glow" aria-hidden="true"></div>
+        <svg class="garland" viewBox="0 0 2400 150" aria-hidden="true">
+          <path class="twine" d="M0 10Q700 26 1200 76Q1700 26 2400 10"/>
+          <g class="bulbs">
+            <g class="bulb b-berry" transform="translate(105 12.6)"><path d="M0 0v9"/><rect x="-3.5" y="9" width="7" height="6" rx="1.5"/><ellipse cy="23" rx="6" ry="9"/></g>
+            <g class="bulb b-brass" transform="translate(240 16.7)"><path d="M0 0v14"/><rect x="-3.5" y="14" width="7" height="6" rx="1.5"/><ellipse cy="28" rx="6" ry="9"/></g>
+            <g class="bulb b-berry" transform="translate(375 21.6)"><path d="M0 0v9"/><rect x="-3.5" y="9" width="7" height="6" rx="1.5"/><ellipse cy="23" rx="6" ry="9"/></g>
+            <g class="bulb b-brass" transform="translate(510 27.4)"><path d="M0 0v14"/><rect x="-3.5" y="14" width="7" height="6" rx="1.5"/><ellipse cy="28" rx="6" ry="9"/></g>
+            <g class="bulb b-berry" transform="translate(645 34.2)"><path d="M0 0v9"/><rect x="-3.5" y="9" width="7" height="6" rx="1.5"/><ellipse cy="23" rx="6" ry="9"/></g>
+            <g class="bulb b-brass" transform="translate(780 42.2)"><path d="M0 0v14"/><rect x="-3.5" y="14" width="7" height="6" rx="1.5"/><ellipse cy="28" rx="6" ry="9"/></g>
+            <g class="bulb b-berry" transform="translate(915 51.4)"><path d="M0 0v9"/><rect x="-3.5" y="9" width="7" height="6" rx="1.5"/><ellipse cy="23" rx="6" ry="9"/></g>
+            <g class="bulb b-brass" transform="translate(1050 62.1)"><path d="M0 0v14"/><rect x="-3.5" y="14" width="7" height="6" rx="1.5"/><ellipse cy="28" rx="6" ry="9"/></g>
+            <g class="bulb b-brass" transform="translate(1350 62.1)"><path d="M0 0v14"/><rect x="-3.5" y="14" width="7" height="6" rx="1.5"/><ellipse cy="28" rx="6" ry="9"/></g>
+            <g class="bulb b-berry" transform="translate(1485 51.4)"><path d="M0 0v9"/><rect x="-3.5" y="9" width="7" height="6" rx="1.5"/><ellipse cy="23" rx="6" ry="9"/></g>
+            <g class="bulb b-brass" transform="translate(1620 42.2)"><path d="M0 0v14"/><rect x="-3.5" y="14" width="7" height="6" rx="1.5"/><ellipse cy="28" rx="6" ry="9"/></g>
+            <g class="bulb b-berry" transform="translate(1755 34.2)"><path d="M0 0v9"/><rect x="-3.5" y="9" width="7" height="6" rx="1.5"/><ellipse cy="23" rx="6" ry="9"/></g>
+            <g class="bulb b-brass" transform="translate(1890 27.4)"><path d="M0 0v14"/><rect x="-3.5" y="14" width="7" height="6" rx="1.5"/><ellipse cy="28" rx="6" ry="9"/></g>
+            <g class="bulb b-berry" transform="translate(2025 21.6)"><path d="M0 0v9"/><rect x="-3.5" y="9" width="7" height="6" rx="1.5"/><ellipse cy="23" rx="6" ry="9"/></g>
+            <g class="bulb b-brass" transform="translate(2160 16.7)"><path d="M0 0v14"/><rect x="-3.5" y="14" width="7" height="6" rx="1.5"/><ellipse cy="28" rx="6" ry="9"/></g>
+            <g class="bulb b-berry" transform="translate(2295 12.6)"><path d="M0 0v9"/><rect x="-3.5" y="9" width="7" height="6" rx="1.5"/><ellipse cy="23" rx="6" ry="9"/></g>
+          </g>
+        </svg>
+
+        <div class="side-note" aria-hidden="true">
+          <p>一份礼物，<br>一个值得期待的冬天</p>
+          <svg viewBox="0 0 100 50"><path d="M5 5Q25 50 90 30m-13-5 14 5-10 10"/></svg>
+        </div>
+        <div class="postmark" aria-hidden="true">
+          <svg viewBox="0 0 120 120">
+            <defs><path id="pm-top" d="M20 60a40 40 0 0 1 80 0"/><path id="pm-bot" d="M16 60a44 44 0 0 0 88 0"/></defs>
+            <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="1"/>
+            <circle cx="60" cy="60" r="47" fill="none" stroke="currentColor" stroke-width=".8"/>
+            <text class="pm-arc"><textPath href="#pm-top" startOffset="50%" text-anchor="middle">北 极 邮 局</textPath></text>
+            <text class="pm-day" x="60" y="58" text-anchor="middle">DEC</text>
+            <text class="pm-day" x="60" y="80" text-anchor="middle">25</text>
+            <text class="pm-arc pm-small"><textPath href="#pm-bot" startOffset="50%" text-anchor="middle">with love</textPath></text>
+          </svg>
+        </div>
+        <svg class="spark spark-one" aria-hidden="true"><use href="#i-spark"/></svg>
+        <svg class="spark spark-two" aria-hidden="true"><use href="#i-spark-line"/></svg>
+
+        <button class="stocking-button" id="open-stocking" type="button" aria-label="打开圣诞袜，填写你的礼物愿望">
+          <svg class="stocking-art" viewBox="0 0 360 420" aria-hidden="true">
             <defs>
               <linearGradient id="red" x1="0" x2="1"><stop stop-color="#a92937"/><stop offset=".42" stop-color="#c34248"/><stop offset="1" stop-color="#982934"/></linearGradient>
               <linearGradient id="cream" x2="0" y2="1"><stop stop-color="#fffdf2"/><stop offset="1" stop-color="#e9ddc4"/></linearGradient>
               <linearGradient id="gold" x2="1" y2="1"><stop stop-color="#eac87b"/><stop offset=".5" stop-color="#b88836"/><stop offset="1" stop-color="#edcf8d"/></linearGradient>
               <pattern id="knit" width="12" height="12" patternUnits="userSpaceOnUse"><path d="m2 2 4 4 4-4m-8 6 4 4 4-4" fill="none" stroke="#ffdac3" stroke-opacity=".12" stroke-width="1.3"/></pattern>
               <clipPath id="sock-clip"><path d="M113 105H251L238 267Q240 287 271 295L301 305Q330 318 320 348Q309 385 261 387H150Q89 385 81 338Q78 318 87 285Z"/></clipPath>
-              <filter id="shadow" x="-40%" y="-30%" width="180%" height="180%"><feDropShadow dx="2" dy="16" stdDeviation="12" flood-color="#61342d" flood-opacity=".18"/></filter>
+              <filter id="shadow" x="-40%" y="-30%" width="180%" height="180%"><feDropShadow dx="2" dy="16" stdDeviation="12" flood-color="#61342d" flood-opacity=".2"/></filter>
             </defs>
-            <ellipse cx="199" cy="399" rx="110" ry="10" fill="#977754" opacity=".08"/>
             <g class="sock-body" filter="url(#shadow)">
-              <path d="M233 84q45-79 45-45 0 24-35 52" stroke="#ab343b" stroke-width="11" fill="none"/>
+              <!-- 挂环：顶点 (262,20) 正好扣在灯串的木夹上 -->
+              <path d="M228 90C224 46 248 20 262 20s30 32 6 72" stroke="#ab343b" stroke-width="9" fill="none" stroke-linecap="round"/>
+              <path d="M231 84C229 50 249 27 262 27" stroke="#d66a68" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>
               <path d="M113 105H251L238 267Q240 287 271 295L301 305Q330 318 320 348Q309 385 261 387H150Q89 385 81 338Q78 318 87 285Z" fill="url(#red)"/>
               <g clip-path="url(#sock-clip)">
                 <path d="M73 299q52-24 76 18t-10 78H63Z" fill="#8e2734"/>
@@ -52,34 +120,88 @@
                 <path d="M124 121 99 284q-17 69 47 88" stroke="#ec8580" stroke-width="3" opacity=".25" fill="none"/>
               </g>
               <g class="sock-cuff"><rect x="96" y="83" width="166" height="76" rx="24" fill="url(#cream)"/><path d="M109 94v50m12-52v56m13-56v56m13-56v56m13-56v56m13-56v56m13-56v56m13-56v56m13-56v56m13-56v56m13-54v52m12-49v45" stroke="#ded2b9" stroke-width="2" opacity=".5"/><path d="M111 90q65-13 134 0" fill="none" stroke="#fffdf5" stroke-width="6" stroke-linecap="round"/></g>
-              <g transform="translate(227 122)"><path d="M0 0Q4-40 27-35l-2 12 11 1-13 13 6 10Q13 8 0 0" fill="#285741"/><path d="M0 0q-13-30-34-18l8 8-7 7 17 2-1 10Q-2 13 0 0" fill="#3b6b4e"/><path d="m1 0 20-26M0 0l-24-12" stroke="#8f9b67" fill="none"/><circle r="7" cx="0" cy="3" fill="#b03235"/><circle r="6" cx="10" cy="7" fill="#d65144"/><path d="M4 15q-7 8-4 25" stroke="#b99244" stroke-width="2" fill="none"/><path d="M-13 48q-2-17 13-17t14 17l3 4h-33Z" fill="url(#gold)"/><circle cx="0" cy="55" r="4" fill="#a77c32"/><path d="M-9 50h19" stroke="#8c672d" stroke-width="2"/></g>
+              <g transform="translate(227 122)"><path d="M0 0Q4-40 27-35l-2 12 11 1-13 13 6 10Q13 8 0 0" fill="#285741"/><path d="M0 0q-13-30-34-18l8 8-7 7 17 2-1 10Q-2 13 0 0" fill="#3b6b4e"/><path d="m1 0 20-26M0 0l-24-12" stroke="#8f9b67" fill="none"/><circle r="7" cx="0" cy="3" fill="#b03235"/><circle r="6" cx="10" cy="7" fill="#d65144"/><g class="bell"><path d="M4 15q-7 8-4 25" stroke="#b99244" stroke-width="2" fill="none"/><path d="M-13 48q-2-17 13-17t14 17l3 4h-33Z" fill="url(#gold)"/><circle cx="0" cy="55" r="4" fill="#a77c32"/><path d="M-9 50h19" stroke="#8c672d" stroke-width="2"/></g></g>
             </g>
           </svg>
         </button>
-        <div class="click-hint"><span aria-hidden="true">↑</span> 轻点袜子，让心愿住进来</div>
+        <!-- 木夹画在袜子之上，看起来是它夹住了挂环 -->
+        <svg class="peg" viewBox="0 0 24 44" aria-hidden="true"><rect x="5" y="0" width="14" height="40" rx="3" fill="#c49a62"/><rect x="5" y="0" width="7" height="40" rx="3" fill="#d8b47c"/><rect x="3.5" y="15" width="17" height="6" rx="1.5" fill="#8a8f86"/><path d="M12 2v36" stroke="#a87d47" stroke-width="1"/></svg>
+
+        <p class="click-hint" aria-hidden="true">轻点袜子，让心愿住进来</p>
       </div>
-      <button class="primary" id="open-wish">写下我的圣诞愿望 <span aria-hidden="true">↗</span></button>
-      <p class="quiet-note"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 7V5a4 4 0 0 1 8 0v2M3 7h10v8H3z"/></svg> 愿望只给收集者看，也可以匿名投递</p>
+
+      <button class="primary" id="open-wish" type="button"><svg aria-hidden="true"><use href="#i-letter"/></svg>写下我的圣诞愿望</button>
+      <p class="quiet-note"><svg aria-hidden="true"><use href="#i-lock"/></svg>愿望只给收集者看，也可以匿名投递</p>
     </section>
-    <section class="how-it-works" aria-label="许愿只需要三步"><div><span>01</span><p>打开圣诞袜<small>一点点好奇，开启惊喜</small></p></div><i aria-hidden="true">✧</i><div><span>02</span><p>写下小小心愿<small>礼物很小，期待可以很大</small></p></div><i aria-hidden="true">✧</i><div><span>03</span><p>寄出圣诞期待<small>愿每一份心意，都被珍惜</small></p></div></section>
+
+    <ol class="how-it-works" aria-label="许愿只需要三步">
+      <li><span class="step-n">1</span><p>打开圣诞袜<small>一点点好奇，<wbr>开启惊喜</small></p></li>
+      <li><span class="step-n">2</span><p>写下小小心愿<small>礼物很小，<wbr>期待可以很大</small></p></li>
+      <li><span class="step-n">3</span><p>寄出圣诞期待<small>愿每一份心意，<wbr>都被珍惜</small></p></li>
+    </ol>
   </main>
-  <footer><span>MADE OF LITTLE WISHES & CHRISTMAS MAGIC</span><button class="text-button" id="privacy-open">隐私说明</button><span class="footer-wish">愿你被这个冬天温柔以待 ✷</span></footer>
-  <dialog id="wish-dialog" aria-labelledby="dialog-title">
-    <button class="close" id="close-wish" aria-label="关闭许愿窗口">×</button>
-    <div id="form-panel"><div class="modal-icon" aria-hidden="true">✉</div><p class="eyebrow">A LETTER TO SANTA</p><h2 id="dialog-title">亲爱的圣诞老人，</h2><p class="modal-intro">我想把这份小小的期待，寄给你。</p>
-      <form id="wish-form">
-        <label for="nickname">你的昵称 <span>选填，留空就是匿名</span></label><input id="nickname" name="nickname" maxlength="30" autocomplete="off" placeholder="圣诞老人该怎么称呼你？">
-        <label for="gift">今年，我想要…… <span>必填</span></label><textarea id="gift" name="gift" rows="4" maxlength="500" required placeholder="一条暖暖的围巾、一本想读很久的书，或是一次久违的相聚……"></textarea><div class="counter"><span>每个愿望，都值得认真对待</span><span id="char-count">0 / 500</span></div>
+
+  <footer>
+    <span class="footer-mark">Made of little wishes &amp; Christmas magic</span>
+    <button class="icon-text" id="privacy-open" type="button">隐私说明</button>
+    <span class="footer-wish">愿你被这个冬天温柔以待</span>
+  </footer>
+
+  <dialog id="wish-dialog" class="letter" aria-labelledby="dialog-title">
+    <button class="close" id="close-wish" type="button" aria-label="关闭许愿窗口"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+    <div id="form-panel">
+      <div class="stamp" aria-hidden="true">
+        <svg viewBox="-3 -3 66 78"><rect width="60" height="72" fill="#f3e9d2"/><rect x="5" y="5" width="50" height="62" fill="#1f4a3c"/><path d="M30 14l13 22h-6l9 14H14l9-14h-6Z" fill="#3f7a5c"/><path d="M30 14l13 22h-6l9 14H30Z" fill="#2f6a4e"/><rect x="27" y="50" width="6" height="6" fill="#8a6424"/><circle cx="30" cy="12" r="2.5" fill="#e6c27a"/><circle cx="24" cy="30" r="1.6" fill="#c34248"/><circle cx="35" cy="40" r="1.6" fill="#e6c27a"/><circle cx="21" cy="45" r="1.6" fill="#e6c27a"/><text x="30" y="64" text-anchor="middle" fill="#f3e9d2" font-size="6" font-family="Georgia,serif" letter-spacing=".5">NOËL</text><g fill="#fffdf7"><circle cx="0" cy="0" r="2.6"/><circle cx="0" cy="72" r="2.6"/><circle cx="6" cy="0" r="2.6"/><circle cx="6" cy="72" r="2.6"/><circle cx="12" cy="0" r="2.6"/><circle cx="12" cy="72" r="2.6"/><circle cx="18" cy="0" r="2.6"/><circle cx="18" cy="72" r="2.6"/><circle cx="24" cy="0" r="2.6"/><circle cx="24" cy="72" r="2.6"/><circle cx="30" cy="0" r="2.6"/><circle cx="30" cy="72" r="2.6"/><circle cx="36" cy="0" r="2.6"/><circle cx="36" cy="72" r="2.6"/><circle cx="42" cy="0" r="2.6"/><circle cx="42" cy="72" r="2.6"/><circle cx="48" cy="0" r="2.6"/><circle cx="48" cy="72" r="2.6"/><circle cx="54" cy="0" r="2.6"/><circle cx="54" cy="72" r="2.6"/><circle cx="60" cy="0" r="2.6"/><circle cx="60" cy="72" r="2.6"/><circle cx="0" cy="6" r="2.6"/><circle cx="60" cy="6" r="2.6"/><circle cx="0" cy="12" r="2.6"/><circle cx="60" cy="12" r="2.6"/><circle cx="0" cy="18" r="2.6"/><circle cx="60" cy="18" r="2.6"/><circle cx="0" cy="24" r="2.6"/><circle cx="60" cy="24" r="2.6"/><circle cx="0" cy="30" r="2.6"/><circle cx="60" cy="30" r="2.6"/><circle cx="0" cy="36" r="2.6"/><circle cx="60" cy="36" r="2.6"/><circle cx="0" cy="42" r="2.6"/><circle cx="60" cy="42" r="2.6"/><circle cx="0" cy="48" r="2.6"/><circle cx="60" cy="48" r="2.6"/><circle cx="0" cy="54" r="2.6"/><circle cx="60" cy="54" r="2.6"/><circle cx="0" cy="60" r="2.6"/><circle cx="60" cy="60" r="2.6"/><circle cx="0" cy="66" r="2.6"/><circle cx="60" cy="66" r="2.6"/></g></svg>
+      </div>
+      <h2 id="dialog-title">亲爱的圣诞老人，</h2>
+      <p class="modal-intro">我想把这份小小的期待，寄给你。</p>
+      <form id="wish-form" novalidate>
+        <label for="nickname">你的昵称 <span>选填，留空就是匿名</span></label>
+        <input id="nickname" name="nickname" maxlength="30" autocomplete="off" enterkeyhint="next" placeholder="圣诞老人该怎么称呼你？">
+        <label for="gift">今年，我想要…… <span>必填</span></label>
+        <textarea id="gift" name="gift" rows="4" maxlength="500" required placeholder="一条暖暖的围巾、一本想读很久的书，或是一次久违的相聚……"></textarea>
+        <div class="counter"><span>不必很大，认真就好</span><span id="char-count">0 / 500</span></div>
         <div class="honeypot" aria-hidden="true"><label for="website">请留空</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
         <label class="consent"><input type="checkbox" id="consent" required><span>我同意将昵称和愿望提交给收集者。请勿填写地址、电话等敏感信息。<button type="button" class="inline-link" id="form-privacy">隐私说明</button></span></label>
         <p id="form-error" class="error" role="alert" hidden></p>
-        <button class="primary submit" id="submit" type="submit">把愿望放进袜子 <span aria-hidden="true">✧</span></button>
+        <button class="primary submit" id="submit" type="submit"><span id="submit-label">把愿望放进袜子</span></button>
       </form>
     </div>
-    <div id="success-panel" hidden><div class="success-seal" aria-hidden="true">✓</div><p class="eyebrow">SIGNED, SEALED, SENT</p><h2 tabindex="-1" id="success-title">心愿已妥善收藏</h2><p>你的期待已保存到邮局。<br>愿惊喜在这个圣诞，轻轻敲门。</p><p class="receipt">心愿回执 <code id="receipt"></code></p><p class="receipt-help">可截图保留回执。若想删除心愿，请将回执发给分享此链接的人。</p><button class="primary" id="done">收好这份期待</button><p class="success-footnote">许愿是分享心意，不代表礼物一定会实现。</p></div>
+    <div id="success-panel" hidden>
+      <div class="success-seal" aria-hidden="true"><svg><use href="#i-check"/></svg></div>
+      <h2 tabindex="-1" id="success-title">心愿已妥善收藏</h2>
+      <p>你的期待已保存到邮局。<br>愿惊喜在这个圣诞，轻轻敲门。</p>
+      <div class="receipt"><span>心愿回执</span><code id="receipt"></code><button type="button" class="inline-link" id="copy-receipt"><svg aria-hidden="true"><use href="#i-copy"/></svg>复制</button></div>
+      <p class="receipt-help">可截图保留回执。若想删除心愿，请将回执发给分享此链接的人。</p>
+      <button class="primary" id="done" type="button">收好，放进袜子</button>
+      <p class="success-footnote">许愿是分享心意，不代表礼物一定会实现。</p>
+    </div>
   </dialog>
-  <dialog id="privacy-dialog" aria-labelledby="privacy-title"><button class="close" id="privacy-close" aria-label="关闭隐私说明">×</button><p class="eyebrow">A PRIVATE LITTLE WISH</p><h2 id="privacy-title">关于你的心愿</h2><p>我们只收集你填写的昵称、愿望、提交时间与随机回执编号。昵称可留空，不需要登录。</p><p>愿望保存在网站配置的云端数据库中，仅供收集者查看；其他访客无法浏览。网页不使用广告追踪，也不会把愿望保存在浏览器本地存储中。</p><p>请不要填写真实住址、手机号、证件号码或付款信息。托管服务商可能保留正常的网络访问日志。</p><p>如需查询或删除，请把回执编号发给分享此链接的人。保留期限由收集者管理，建议活动结束后 30 天内清理。提交心愿不代表一定获赠礼物。</p></dialog>
-  <dialog id="share-dialog" aria-labelledby="share-title"><button class="close" id="share-close" aria-label="关闭分享窗口">×</button><h2 id="share-title">把圣诞分享出去</h2><p>复制下面的链接，邀请朋友一起许愿。</p><input id="share-url" readonly aria-label="网站分享链接"><button class="primary" id="copy-share">复制链接</button></dialog>
+
+  <dialog id="privacy-dialog" aria-labelledby="privacy-title">
+    <button class="close" id="privacy-close" type="button" aria-label="关闭隐私说明"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+    <h2 id="privacy-title">关于你的心愿</h2>
+    <p>我们只收集你填写的昵称、愿望、提交时间与随机回执编号。昵称可留空，不需要登录。</p>
+    <p>为防止刷屏，服务器会把访问 IP 做不可逆的加盐摘要，仅用于统计当天提交次数，次日即失效；原始 IP 不会被保存。</p>
+    <p>愿望保存在网站配置的云端数据库中，仅供收集者查看；其他访客无法浏览。网页不使用广告追踪，也不会把愿望保存在浏览器本地存储中。</p>
+    <p>请不要填写真实住址、手机号、证件号码或付款信息。托管服务商可能保留正常的网络访问日志。</p>
+    <p>如需查询或删除，请把回执编号发给分享此链接的人。保留期限由收集者管理，建议活动结束后 30 天内清理。提交心愿不代表一定获赠礼物。</p>
+  </dialog>
+
+  <dialog id="share-dialog" aria-labelledby="share-title">
+    <button class="close" id="share-close" type="button" aria-label="关闭分享窗口"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+    <h2 id="share-title">把圣诞分享出去</h2>
+    <p>复制下面的链接，邀请朋友一起许愿。</p>
+    <input id="share-url" readonly aria-label="网站分享链接">
+    <button class="primary" id="copy-share" type="button"><svg aria-hidden="true"><use href="#i-copy"/></svg><span>复制链接</span></button>
+  </dialog>
+
+  <div class="wechat-hint" id="wechat-hint" hidden>
+    <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M20 110C40 60 70 30 105 15m-20 0h20v20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <p>点右上角 <b>···</b><br>发送给朋友或分享到朋友圈</p>
+    <button class="primary" id="wechat-close" type="button">知道了</button>
+  </div>
+
   <div id="toast" role="status" class="toast" hidden></div>
   <noscript><p class="no-script">请开启 JavaScript 后填写圣诞愿望。</p></noscript>
 </body>
