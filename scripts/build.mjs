@@ -1,0 +1,20 @@
+import { mkdir, readFile, writeFile, cp } from 'node:fs/promises';
+const files = ['index.html', 'style.css', 'app.js', 'storage.js', 'config.js', 'favicon.svg'];
+const mime = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'text/javascript; charset=utf-8', svg: 'image/svg+xml' };
+const assets = {};
+for (const file of files) assets['/' + file] = { body: await readFile(`public/${file}`, 'utf8'), type: mime[file.split('.').pop()] };
+await mkdir('dist/server', { recursive: true });
+await mkdir('dist/.openai', { recursive: true });
+const api = await readFile('worker/api.js', 'utf8');
+const server = `${api}\nconst assets = ${JSON.stringify(assets)};\nexport default { async fetch(request, env) {
+const url = new URL(request.url);
+if (url.pathname.startsWith('/api/')) return handleApi(request, env);
+if (!['GET','HEAD'].includes(request.method)) return new Response('Method not allowed', { status:405 });
+const asset = assets[url.pathname === '/' ? '/index.html' : url.pathname];
+if (!asset) return new Response('Not found', {status:404});
+return new Response(request.method === 'HEAD' ? null : asset.body, {headers:{'Content-Type':asset.type,'X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cache-Control':'public, max-age=60','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://christmas-wish-stocking-7df218.adroitbun.chatgpt.site; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"}});
+}};`;
+await writeFile('dist/server/index.js', server);
+await cp('.openai/hosting.json', 'dist/.openai/hosting.json');
+await cp('public', 'dist/client', { recursive: true });
+console.log('Built static frontend and durable-storage Worker.');

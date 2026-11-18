@@ -1,0 +1,13 @@
+{
+  "name": "christmas-wish-stocking",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "圣诞心愿邮局：静态网页 + 可持久保存的许愿 API",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": { "node": ">=22" }
+}
