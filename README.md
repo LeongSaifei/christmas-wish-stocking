@@ -2,6 +2,8 @@
 
 一个可以分享给朋友的中文圣诞许愿网页。点击中央的针织圣诞袜，填写昵称（可选）和想要的礼物，把愿望真正保存到云端。
 
+**直接打开并分享：[圣诞心愿邮局](https://leongsaifei.github.io/christmas-wish-stocking/)** · [备用网址](https://christmas-wish-stocking-7df218.adroitbun.chatgpt.site/)。上线与验证记录见 `DEPLOYMENT.md`。
+
 ## 页面与存储
 
 - 原生 HTML / CSS / JavaScript，零前端依赖；所有插画都是项目内原创 SVG，不依赖外部字体、图片或 CDN。
