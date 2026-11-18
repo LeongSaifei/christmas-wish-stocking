@@ -17,19 +17,20 @@ begin
   if p_id is null or p_consent is distinct from true or coalesce(p_website,'') <> ''
     or p_gift is null or char_length(trim(p_gift)) not between 1 and 500
     or p_nickname is null or char_length(trim(p_nickname)) > 30 then
-    raise exception 'invalid_wish' using errcode = '22023';
+    raise exception 'invalid_wish' using errcode = 'PT400';
   end if;
   -- Serialize this small private event's submissions, keeping the daily cap atomic.
   perform pg_catalog.pg_advisory_xact_lock(25122026);
   select * into old_row from public.christmas_wishes where id = p_id;
   if found then
     if old_row.nickname <> trim(p_nickname) or old_row.gift <> trim(p_gift) then
-      raise exception 'receipt_conflict' using errcode = '23505';
+      raise exception 'receipt_conflict' using errcode = 'PT409';
     end if;
     return pg_catalog.jsonb_build_object('ok',true,'id',p_id);
   end if;
   if (select count(*) from public.christmas_wishes where created_at >= date_trunc('day',now() at time zone 'UTC') at time zone 'UTC') >= 2000 then
-    raise exception 'daily_capacity';
+    -- PT429：PostgREST 会直接返回 HTTP 429，前端显示“今天的邮袋满了”而不是“内容未通过检查”
+    raise exception 'daily_capacity' using errcode = 'PT429';
   end if;
   insert into public.christmas_wishes(id,nickname,gift) values(p_id,trim(p_nickname),trim(p_gift));
   return pg_catalog.jsonb_build_object('ok',true,'id',p_id);

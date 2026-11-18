@@ -5,11 +5,11 @@ import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { handleApi } from '../worker/api.js';
-import { submitWish } from '../public/storage.js';
+import { submitWish, newReceiptId } from '../public/storage.js';
 const valid = () => ({ id: crypto.randomUUID(), nickname: '', gift: '一本喜欢的书', consent: true, website: '' });
 function envFor(db) { return { DB: { prepare: sql => ({ bind: (...args) => ({ first: async () => db.prepare(sql.replace(/\?[123]/g,'?')).get(...args) ?? null }) }) } }; }
-function request(body, origin='https://leongsaifei.github.io') { return new Request('https://post.example/api/wishes', { method:'POST', headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify(body) }); }
-const schema = readFileSync(new URL('../drizzle/0000_wishes.sql', import.meta.url),'utf8');
+function request(body, origin='https://leongsaifei.github.io', ip) { const headers={'Content-Type':'application/json',Origin:origin}; if (ip) headers['CF-Connecting-IP']=ip; return new Request('https://post.example/api/wishes', { method:'POST', headers,body:JSON.stringify(body) }); }
+const schema = ['0000_wishes.sql','0001_submit_counts.sql'].map(f=>readFileSync(new URL('../drizzle/'+f, import.meta.url),'utf8')).join('\n').replaceAll('--> statement-breakpoint','');
 test('durable save survives DB close/reopen; duplicate retry saves one row; collision cannot overwrite', async () => {
   const dir = mkdtempSync(join(tmpdir(),'christmas-test-')); const path=join(dir,'db.sqlite');
   let db = new DatabaseSync(path); db.exec(schema); const body=valid();
@@ -42,4 +42,25 @@ test('client requires valid confirmed receipt, handles errors and missing config
   await assert.rejects(submitWish(config,body,async()=>new Response('{}',{status:503})),/无法确认/);
   await assert.rejects(submitWish(config,body,async()=>{throw new TypeError('network')}),/网络/);
   assert.equal((await submitWish(config,body,async()=>Response.json({ok:true,id:body.id}))).id,body.id);
+});
+
+test('per-source daily limit: 6th new wish from the same IP is refused, retries still confirm, other IPs unaffected', async () => {
+  const db=new DatabaseSync(':memory:');db.exec(schema);const env=envFor(db);
+  const sent=[];
+  for (let i=0;i<5;i++){const b=valid();sent.push(b);assert.equal((await handleApi(request(b,undefined,'203.0.113.7'),env)).status,201);}
+  assert.equal((await handleApi(request(valid(),undefined,'203.0.113.7'),env)).status,429);
+  assert.equal((await handleApi(request(sent[0],undefined,'203.0.113.7'),env)).status,200);
+  assert.equal((await handleApi(request(valid(),undefined,'198.51.100.2'),env)).status,201);
+  const rows=db.prepare('SELECT source FROM submit_counts').all();
+  assert.ok(rows.every(r=>!r.source.includes('203.0.113')), 'raw IP must not be stored');
+  db.close();
+});
+test('receipt id falls back to getRandomValues outside secure contexts', () => {
+  const id=newReceiptId({getRandomValues:(a)=>crypto.getRandomValues(a)});
+  assert.match(id,/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+});
+test('client: hijacked non-JSON 200 and code bugs are not misreported', async () => {
+  const body=valid();const config={storage:'api',apiBase:'https://post.example'};
+  await assert.rejects(submitWish(config,body,async()=>new Response('<html>portal</html>')),/有效回执/);
+  await assert.rejects(submitWish(config,body,async()=>Response.json({ok:true,id:body.id},{status:429})),/邮袋/);
 });

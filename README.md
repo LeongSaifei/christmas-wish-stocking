@@ -6,8 +6,11 @@
 
 ## 页面与存储
 
-- 原生 HTML / CSS / JavaScript，零前端依赖；所有插画都是项目内原创 SVG，不依赖外部字体、图片或 CDN。
-- 圣诞灯串、飘雪、摇摆袜子、打开反馈、信笺表单、成功盖章与随机回执。
+- 原生 HTML / CSS / JavaScript，零前端依赖；所有插画和图标都是项目内原创 SVG，不依赖 CDN。
+- 标题用思源宋体（Noto Serif SC）、手写句用霞鹜文楷，均只裁出页面用到的字并自托管（合计约 25 KB），Windows、安卓、微信里显示一致。改了这些文案后运行 `python scripts/subset-fonts.py` 重新生成，见脚本说明。
+- 灯串用木夹挂住圣诞袜；三层景深飘雪；横格信纸与邮票；寄出后信封飞进袜口、铃铛轻晃。
+- 不支持 `<dialog>` 的旧浏览器（iOS 15.3 及以下、旧版微信）自动降级为普通浮层；微信内点“分享”会提示使用右上角菜单。
+- `og.png` 分享卡片（1200×630），转发到微信 / Telegram / X 时显示预览图。
 - 手机适配、键盘操作、原生模态窗口、减少动态效果设置、雪花开关、分享/复制链接。
 - 默认通过独立 API 写入 Cloudflare D1 持久数据库。GitHub Pages 和 Sites 页面共用同一个收件箱。
 - 可替换为 Supabase 免费项目；含完整 SQL。不会用 localStorage、服务器内存、模拟计数或延时动画假装保存。
@@ -21,7 +24,7 @@
 npm run dev
 ```
 
-打开终端显示的本地地址。无需 `npm install`。本地预览默认不在生产 API 的 CORS 白名单内，因此本地提交会显示失败，不会伪造成功。需要完整联调时，在后端设置 `ALLOWED_ORIGINS=http://127.0.0.1:4173`，仅测试期间启用。测试愿望请标注“测试”。
+打开终端显示的本地地址。无需 `npm install`。想在手机上看效果：`HOST=0.0.0.0 npm run dev`，再用手机访问电脑的局域网 IP。本地预览默认不在生产 API 的 CORS 白名单内，因此本地提交会显示失败，不会伪造成功。需要完整联调时，在后端设置 `ALLOWED_ORIGINS=http://127.0.0.1:4173`，仅测试期间启用。测试愿望请标注“测试”。
 
 ```sh
 npm test
@@ -34,7 +37,7 @@ npm run build
 
 1. 将本项目推送到你自己的公开 GitHub 仓库。
 2. Settings → Pages → Source 选择 **GitHub Actions**。
-3. 推送 `main`，或在 Actions 手动运行 **Deploy Christmas Post**。工作流只发布 `public/`，不会公开数据库文件或管理凭据。
+3. 推送 `main`，或在 Actions 手动运行 **Deploy Christmas Post**。工作流先跑测试，再 `npm run build`，发布 `dist/client/`（即 `public/` 加上带内容哈希的 `?v=` 版本号，避免发版后新旧文件混用），不会公开数据库文件或管理凭据。
 4. 在 `public/config.js` 设置存储。保留本项目当前 API 地址会把心愿交给本项目的收集者；**Fork 给自己使用时，必须换成你自己的后端**。
 5. 使用 API 后端时，把新网页的完整 origin（如 `https://yourname.github.io`，不带路径）加入后端环境变量 `ALLOWED_ORIGINS`。GitHub Pages 的仓库子路径由相对资源路径支持。
 
@@ -42,7 +45,7 @@ GitHub Free 的公开仓库支持 Pages：[官方说明](https://docs.github.com
 
 ## 部署方式 B：Vercel 静态前端
 
-导入此仓库，Framework Preset 选 Other。项目已有 `vercel.json`，输出目录为 `public`，不需要构建。使用免费 Hobby 方案前确认账号当前条款与个人用途限制。前端发布不等于有数据库；仍须配置下述 API / Supabase。换域名后同步后端 `ALLOWED_ORIGINS`。
+导入此仓库，Framework Preset 选 Other。项目已有 `vercel.json`，构建命令 `npm run build`，输出目录 `dist/client`。使用免费 Hobby 方案前确认账号当前条款与个人用途限制。前端发布不等于有数据库；仍须配置下述 API / Supabase。换域名后同步后端 `ALLOWED_ORIGINS`。
 
 ## 后端 A：本次托管的 D1
 
@@ -51,7 +54,8 @@ GitHub Free 的公开仓库支持 Pages：[官方说明](https://docs.github.com
 - 每条数据：`id`、`nickname`、`gift`、`created_at`（UTC）。空昵称表示匿名。
 - 请求成功提交数据库后才返回 `201 {ok:true,id:...}`；同一回执和相同内容重试返回 `200`，不会新增记录。
 - 输入在服务端重新校验；SQL 参数化；失败不回显内部错误；请求体最多 8 KB。
-- 每天最多 2,000 条新愿望（UTC），数据库原子校验。可修改 API 的上限。
+- 每天最多 2,000 条新愿望，按北京时间 0 点重置，数据库原子校验。
+- 同一网络来源每天最多 5 条新愿望（环境变量 `PER_SOURCE_LIMIT` 可改）。只保存“IP + 每日盐”的 SHA-256 摘要，不存原始 IP；建议在后端设置随机的 `IP_SALT` 环境变量。重试同一张回执不占名额。迁移见 `drizzle/0001_submit_counts.sql`。
 - 无法把此 Worker 直接部署成 GitHub Pages 函数。GitHub Pages 仅提供静态页面，API 必须保留独立运行。
 - 当前托管资源及其额度由连接账号提供，**不承诺 Sites 永久免费**；可迁移到自有免费额度内的 Supabase。
 
@@ -60,7 +64,7 @@ GitHub Free 的公开仓库支持 Pages：[官方说明](https://docs.github.com
 ## 后端 B：Supabase（可选替代）
 
 1. 使用自己的账号创建 Free 项目。套餐与暂停政策以 [Supabase 定价](https://supabase.com/pricing) 为准。
-2. 打开 SQL Editor，执行 `supabase/schema.sql` 一次。该脚本新建表，启用 RLS，撤销匿名直接访问，仅允许调用受限的提交函数。
+2. 打开 SQL Editor，执行 `supabase/schema.sql` 一次（已用 PostgREST 的 `PT429` / `PT409` / `PT400` 错误码，前端能区分“今日已满”“回执冲突”和“内容无效”）。该脚本新建表，启用 RLS，撤销匿名直接访问，仅允许调用受限的提交函数。
 3. 在项目 Connect / API Keys 中取得项目 URL 与 **publishable key**。
 4. 编辑 `public/config.js`：
 
@@ -84,21 +88,21 @@ window.WISH_CONFIG = Object.freeze({
 
 详见 `PRIVACY.md`，网页也包含提交前可读的隐私说明。
 
-- 仅收集可选昵称、愿望、时间和随机回执，不要求登录。应用不存 IP、邮箱、电话、地址、广告标识；服务商仍可能保留访问日志。
+- 仅收集可选昵称、愿望、时间和随机回执，不要求登录。应用不存原始 IP、邮箱、电话、地址、广告标识；防刷只保存当天的加盐 IP 摘要和计数。服务商仍可能保留访问日志。
 - 回执是查询/删除时供收集者定位的编号，不是公开查询凭证。保存成功后截图留存。
 - 收集者应在活动结束后 30 天内清理；目前没有自动清理任务。删除时先核对回执，再在受控数据库管理工具中删除对应行。
-- 公开匿名写入口不等于完整防刷。蜜罐、每日总量和 CORS 不能阻止脚本攻击；CORS 不是身份认证。大范围推广前应加服务端校验的 Turnstile / 按用户或网络来源限流，并同步隐私说明。
+- 公开匿名写入口不等于完整防刷。蜜罐、按来源限流、每日总量和 CORS 能挡住大部分随手的脚本，但挡不住换 IP 的攻击；CORS 不是身份认证。大范围推广前建议再加服务端校验的 Turnstile。
 - 网络超时可能发生在写入之后。保留当前窗口点击重试会复用回执；刷新后重新填写会生成新回执，可能新增一条。系统不把未确认的请求显示成成功。
 - 可访问性包含键盘焦点、原生 dialog、控件标签与系统减少动态效果；免费托管与跨境服务在不同网络下的可达性需实际测试。
 
 ## 目录
 
 ```text
-public/                 可独立部署的静态网页
+public/                 静态网页源文件（fonts/ 为子集字体及其 OFL 许可证）
 worker/api.js           D1 写入 API
 drizzle/                D1 数据库迁移
 supabase/schema.sql     可选 Supabase 配置
-scripts/                预览和构建，无运行依赖
+scripts/                预览、构建、字体子集化
 tests/                  持久保存、权限和失败路径测试
 .github/workflows/      GitHub Pages 自动发布
 ```
