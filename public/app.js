@@ -1,4 +1,5 @@
 import { submitWish, newReceiptId } from './storage.js';
+import { setupStockings } from './stockings.js';
 
 const $ = (id) => document.getElementById(id);
 const form = $('wish-form');
@@ -38,7 +39,7 @@ if (!nativeDialog) {
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     const top = [...document.querySelectorAll('dialog[open]')].pop();
-    if (top && !(top === dialog && pending)) closeModal(top);
+    if (top && top.dispatchEvent(new Event('cancel', { cancelable: true }))) closeModal(top);
   });
 }
 
@@ -60,6 +61,7 @@ function resetLetter() {
   $('form-panel').hidden = false;
 }
 function openWish() {
+  if (!boxes.ready()) return;
   stocking.classList.remove('opening');
   void stocking.offsetWidth;
   stocking.classList.add('opening');
@@ -92,7 +94,7 @@ $('gift').addEventListener('input', () => {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (pending) return;
+  if (pending || !boxes.ready()) return;
   const nickname = $('nickname').value.trim();
   const gift = $('gift').value.trim();
   if (!gift) { $('gift').setCustomValidity('写下一点心愿，再寄出吧。'); $('gift').reportValidity(); return; }
@@ -108,7 +110,7 @@ form.addEventListener('submit', async (event) => {
   // 冻结信纸，迟到的回执不会对应到被改过的内容
   for (const el of form.elements) el.disabled = true;
   try {
-    const result = await submitWish(window.WISH_CONFIG, { id: receiptId, nickname, gift, consent: true, website: $('website').value });
+    const result = await submitWish(window.WISH_CONFIG, { id: receiptId, nickname, gift, stockingId: boxes.target(), consent: true, website: $('website').value });
     $('receipt').textContent = result.id;
     $('form-panel').hidden = true;
     $('success-panel').hidden = false;
@@ -183,8 +185,10 @@ $('done').addEventListener('click', () => {
 for (const id of ['privacy-open', 'form-privacy']) $(id).addEventListener('click', () => openModal($('privacy-dialog')));
 $('privacy-close').addEventListener('click', () => closeModal($('privacy-dialog')));
 
-const shareUrl = () => new URL('./', location.href).href;
+const boxes = setupStockings({ $, newReceiptId, openModal, closeModal, resetLetter });
+const shareUrl = () => boxes.invite();
 $('share').addEventListener('click', async () => {
+  if (boxes.enabled && !boxes.isOwner()) { boxes.openCreate(); return; }
   if (isWeChat) { $('wechat-hint').hidden = false; return; }
   if (navigator.share) {
     try { await navigator.share({ title: '圣诞心愿邮局', text: '点击圣诞袜，把你的礼物愿望装进来。', url: shareUrl() }); return; }

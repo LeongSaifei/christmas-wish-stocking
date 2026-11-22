@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f7f2e7">
+  <meta name="referrer" content="no-referrer">
   <meta name="description" content="点击圣诞袜，写下想要的礼物。把小小心愿，寄往北极。">
   <meta property="og:type" content="website">
   <meta property="og:title" content="圣诞心愿邮局 · 把心愿装进圣诞袜">
@@ -43,7 +44,7 @@
     </a>
     <nav aria-label="页面操作">
       <button class="icon-text" id="snow-toggle" type="button" aria-pressed="true"><svg aria-hidden="true"><use href="#i-snow"/></svg><span id="snow-label">雪花已开启</span></button>
-      <button class="share-button" id="share" type="button"><svg aria-hidden="true"><use href="#i-share"/></svg><span>分享</span></button>
+      <button class="share-button" id="share" type="button"><svg aria-hidden="true"><use href="#i-share"/></svg><span id="share-label">创建我的圣诞袜</span></button>
     </nav>
   </header>
 
@@ -51,7 +52,7 @@
     <section class="hero" aria-labelledby="hero-title">
       <p class="eyebrow">North Pole Mail Service</p>
       <h1 id="hero-title">把小小心愿，<br>装进<span>圣诞袜</span>。</h1>
-      <p class="intro">有些期待，值得被悄悄珍藏。<br class="mobile-break">今年圣诞，你想收到什么？</p>
+      <p class="intro" id="recipient" role="status">这封愿望会寄给圣诞心愿邮局的发起人。</p>
 
       <div class="stocking-scene">
         <div class="glow" aria-hidden="true"></div>
@@ -131,7 +132,8 @@
       </div>
 
       <button class="primary" id="open-wish" type="button"><svg aria-hidden="true"><use href="#i-letter"/></svg>写下我的圣诞愿望</button>
-      <p class="quiet-note"><svg aria-hidden="true"><use href="#i-lock"/></svg>愿望只给收集者看，也可以匿名投递</p>
+      <p class="quiet-note"><svg aria-hidden="true"><use href="#i-lock"/></svg>可以匿名投递</p>
+      <button type="button" class="inline-link stocking-action" id="open-inbox">打开我的收件箱</button>
     </section>
 
     <ol class="how-it-works" aria-label="许愿只需要三步">
@@ -154,7 +156,7 @@
         <svg viewBox="-3 -3 66 78"><rect width="60" height="72" fill="#f3e9d2"/><rect x="5" y="5" width="50" height="62" fill="#1f4a3c"/><path d="M30 14l13 22h-6l9 14H14l9-14h-6Z" fill="#3f7a5c"/><path d="M30 14l13 22h-6l9 14H30Z" fill="#2f6a4e"/><rect x="27" y="50" width="6" height="6" fill="#8a6424"/><circle cx="30" cy="12" r="2.5" fill="#e6c27a"/><circle cx="24" cy="30" r="1.6" fill="#c34248"/><circle cx="35" cy="40" r="1.6" fill="#e6c27a"/><circle cx="21" cy="45" r="1.6" fill="#e6c27a"/><text x="30" y="64" text-anchor="middle" fill="#f3e9d2" font-size="6" font-family="Georgia,serif" letter-spacing=".5">NOËL</text><g fill="#fffdf7"><circle cx="0" cy="0" r="2.6"/><circle cx="0" cy="72" r="2.6"/><circle cx="6" cy="0" r="2.6"/><circle cx="6" cy="72" r="2.6"/><circle cx="12" cy="0" r="2.6"/><circle cx="12" cy="72" r="2.6"/><circle cx="18" cy="0" r="2.6"/><circle cx="18" cy="72" r="2.6"/><circle cx="24" cy="0" r="2.6"/><circle cx="24" cy="72" r="2.6"/><circle cx="30" cy="0" r="2.6"/><circle cx="30" cy="72" r="2.6"/><circle cx="36" cy="0" r="2.6"/><circle cx="36" cy="72" r="2.6"/><circle cx="42" cy="0" r="2.6"/><circle cx="42" cy="72" r="2.6"/><circle cx="48" cy="0" r="2.6"/><circle cx="48" cy="72" r="2.6"/><circle cx="54" cy="0" r="2.6"/><circle cx="54" cy="72" r="2.6"/><circle cx="60" cy="0" r="2.6"/><circle cx="60" cy="72" r="2.6"/><circle cx="0" cy="6" r="2.6"/><circle cx="60" cy="6" r="2.6"/><circle cx="0" cy="12" r="2.6"/><circle cx="60" cy="12" r="2.6"/><circle cx="0" cy="18" r="2.6"/><circle cx="60" cy="18" r="2.6"/><circle cx="0" cy="24" r="2.6"/><circle cx="60" cy="24" r="2.6"/><circle cx="0" cy="30" r="2.6"/><circle cx="60" cy="30" r="2.6"/><circle cx="0" cy="36" r="2.6"/><circle cx="60" cy="36" r="2.6"/><circle cx="0" cy="42" r="2.6"/><circle cx="60" cy="42" r="2.6"/><circle cx="0" cy="48" r="2.6"/><circle cx="60" cy="48" r="2.6"/><circle cx="0" cy="54" r="2.6"/><circle cx="60" cy="54" r="2.6"/><circle cx="0" cy="60" r="2.6"/><circle cx="60" cy="60" r="2.6"/><circle cx="0" cy="66" r="2.6"/><circle cx="60" cy="66" r="2.6"/></g></svg>
       </div>
       <h2 id="dialog-title">亲爱的圣诞老人，</h2>
-      <p class="modal-intro">我想把这份小小的期待，寄给你。</p>
+      <p class="modal-intro" id="letter-recipient">收件人 · 圣诞心愿邮局的发起人</p>
       <form id="wish-form" novalidate>
         <label for="nickname">你的昵称 <span>选填，留空就是匿名</span></label>
         <input id="nickname" name="nickname" maxlength="30" autocomplete="off" enterkeyhint="next" placeholder="圣诞老人该怎么称呼你？">
@@ -172,20 +174,62 @@
       <h2 tabindex="-1" id="success-title">心愿已妥善收藏</h2>
       <p>你的期待已保存到邮局。<br>愿惊喜在这个圣诞，轻轻敲门。</p>
       <div class="receipt"><span>心愿回执</span><code id="receipt"></code><button type="button" class="inline-link" id="copy-receipt"><svg aria-hidden="true"><use href="#i-copy"/></svg>复制</button></div>
-      <p class="receipt-help">可截图保留回执。若想删除心愿，请将回执发给分享此链接的人。</p>
+      <p class="receipt-help">可截图保留回执。若想删除心愿，请把回执交给页面标出的收件人，由其联系网站维护者处理。</p>
       <button class="primary" id="done" type="button">收好，放进袜子</button>
+      <button class="inline-link stocking-action" id="after-create" type="button">我也要收集朋友的愿望</button>
       <p class="success-footnote">许愿是分享心意，不代表礼物一定会实现。</p>
     </div>
   </dialog>
 
+  <dialog id="create-dialog" aria-labelledby="create-title">
+    <button class="close" id="create-close" type="button" aria-label="关闭">×</button>
+    <h2 id="create-title">挂起我的圣诞袜</h2>
+    <form id="create-form">
+      <label for="collector-name">朋友看到的收件人昵称</label>
+      <input id="collector-name" required maxlength="24" placeholder="例如：小鹿" autocomplete="off">
+      <button class="primary stocking-action" type="submit">生成我的专属链接</button>
+    </form>
+    <div id="created-panel" hidden>
+      <label for="owner-code">你的查看口令 · 请私下保存</label>
+      <input id="owner-code" readonly spellcheck="false" autocomplete="off">
+      <button class="inline-link stocking-action" id="copy-key" type="button">复制查看口令</button>
+      <p>请先保存口令，换手机也能用它收信。关闭页面后无法找回口令。分享给朋友时，只发下面的邀请链接。</p>
+      <label for="invite-url">发给朋友的邀请链接</label>
+      <input id="invite-url" readonly>
+      <button class="primary stocking-action" id="copy-invite" type="button">复制我的邀请链接</button>
+      <button class="inline-link stocking-action" id="owner-done" type="button">我已保存口令，打开收件箱</button>
+    </div>
+    <p id="create-status" role="status"></p>
+  </dialog>
+  <dialog id="inbox-dialog" aria-labelledby="inbox-title">
+    <button class="close" id="inbox-close" type="button" aria-label="关闭">×</button>
+    <h2 id="inbox-title">我的收件箱</h2>
+    <form id="unlock-form">
+      <label for="unlock-key">创建圣诞袜时保存的查看口令</label>
+      <input id="unlock-key" type="password" required autocomplete="off" spellcheck="false">
+      <button class="primary stocking-action" type="submit">查看收到的愿望</button>
+    </form>
+    <div id="inbox-body" hidden>
+      <label for="inbox-invitation">发给朋友的邀请链接</label>
+      <input id="inbox-invitation" readonly>
+      <button type="button" class="inline-link" id="inbox-invite">复制这只袜子的邀请链接</button>
+      <details><summary>备份我的查看口令</summary>
+        <input id="inbox-recovery" aria-label="私人查看口令" readonly>
+        <button type="button" class="inline-link" id="inbox-key">复制查看口令</button>
+      </details>
+      <ul class="wish-list" id="inbox-items"></ul>
+      <button class="inline-link" type="button" id="more-wishes" hidden>查看更早的愿望</button>
+    </div>
+    <p id="inbox-status" role="status"></p>
+  </dialog>
   <dialog id="privacy-dialog" aria-labelledby="privacy-title">
     <button class="close" id="privacy-close" type="button" aria-label="关闭隐私说明"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
     <h2 id="privacy-title">关于你的心愿</h2>
     <p>我们只收集你填写的昵称、愿望、提交时间与随机回执编号。昵称可留空，不需要登录。</p>
     <p>为防止刷屏，服务器会把访问 IP 做不可逆的加盐摘要，仅用于统计当天提交次数，次日即失效；原始 IP 不会被保存。</p>
-    <p>愿望保存在网站配置的云端数据库中，仅供收集者查看；其他访客无法浏览。网页不使用广告追踪，也不会把愿望保存在浏览器本地存储中。</p>
+    <p>愿望会寄给页面标出的收件人。持有该袜子查看口令的人可以阅读其来信，网站维护者可以管理云端数据。转发同一邀请链接会寄给同一人；想自己收集，请创建自己的圣诞袜。网页不使用广告追踪，也不会把愿望保存在浏览器本地存储中。</p>
     <p>请不要填写真实住址、手机号、证件号码或付款信息。托管服务商可能保留正常的网络访问日志。</p>
-    <p>如需查询或删除，请把回执编号发给分享此链接的人。保留期限由收集者管理，建议活动结束后 30 天内清理。提交心愿不代表一定获赠礼物。</p>
+    <p>如需删除，请把回执编号交给页面标出的收件人，由其联系网站维护者处理。建议活动结束后 30 天内清理。提交心愿不代表一定获赠礼物。</p>
   </dialog>
 
   <dialog id="share-dialog" aria-labelledby="share-title">

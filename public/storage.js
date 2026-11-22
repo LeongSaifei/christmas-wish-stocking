@@ -15,9 +15,11 @@ class NetworkError extends Error {}
 export async function submitWish(config, payload, fetcher = fetch) {
   let endpoint; let headers = { 'Content-Type': 'application/json' }; let body;
   if (config?.storage === 'api' && config.apiBase) {
-    endpoint = new URL('/api/wishes', config.apiBase).href;
+    const path = payload.stockingId == null ? '/api/wishes' : '/api/stockings/wish';
+    endpoint = new URL(path, config.apiBase).href;
     body = payload;
   } else if (config?.storage === 'supabase' && config.supabaseUrl && config.supabasePublishableKey) {
+    if (payload.stockingId != null) throw new Error('此收集方式只支持原邮局，请检查邀请链接。');
     if (config.supabasePublishableKey.startsWith('sb_secret_')) throw new Error('网站配置有误，请联系分享链接的人。');
     endpoint = new URL('/rest/v1/rpc/submit_christmas_wish', config.supabaseUrl).href;
     headers.apikey = config.supabasePublishableKey;

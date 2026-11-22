@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile, cp, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 
-const text = ['index.html', 'style.css', 'app.js', 'storage.js', 'config.js', 'favicon.svg'];
+const text = ['index.html', 'style.css', 'app.js', 'stockings.js', 'storage.js', 'config.js', 'favicon.svg'];
 const binary = ['fonts/title.woff2', 'fonts/hand.woff2', 'og.png'];
 const mime = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', js: 'text/javascript; charset=utf-8', svg: 'image/svg+xml', woff2: 'font/woff2', png: 'image/png' };
 const ext = (f) => f.split('.').pop();
@@ -14,6 +14,7 @@ for (const f of text) src[f] = await readFile(`public/${f}`, 'utf8');
 const hash = (s) => createHash('sha256').update(s).digest('hex').slice(0, 10);
 const v = {};
 v['storage.js'] = hash(src['storage.js']);
+src['app.js'] = src['app.js'].replace("from './stockings.js'", `from './stockings.js?v=${hash(src['stockings.js'])}'`);
 src['app.js'] = src['app.js'].replace("from './storage.js'", `from './storage.js?v=${v['storage.js']}'`);
 for (const f of ['style.css', 'app.js', 'config.js']) v[f] = hash(src[f]);
 for (const f of ['style.css', 'app.js', 'config.js']) src['index.html'] = src['index.html'].replace(`./${f}"`, `./${f}?v=${v[f]}"`);
