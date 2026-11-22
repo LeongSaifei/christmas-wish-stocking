@@ -1,6 +1,5 @@
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const DAILY_TOTAL = 2000;          // 全站每日上限
-const DAILY_PER_SOURCE = 5;        // 同一网络来源每日上限（可用 env.PER_SOURCE_LIMIT 覆盖）
 // “每日”按北京时间 0 点切换。created_at 存 UTC，下面把北京时间当天 0 点换算回 UTC 再比较，仍能走索引。
 const DAY_START_UTC = "datetime(date('now','+8 hours'),'-8 hours')";
 
@@ -14,15 +13,6 @@ export function validateWish(body) {
 
 function json(body, status = 200, extra = {}) {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...extra } });
-}
-
-/** 加盐 SHA-256，原始 IP 不落库；盐每天变化，摘要无法跨天关联。 */
-async function sourceKey(request, env, day) {
-  const ip = request.headers.get('CF-Connecting-IP');
-  if (!ip) return null;
-  const data = new TextEncoder().encode(`${env.IP_SALT ?? 'christmas-post'}|${day}|${ip}`);
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', data));
-  return [...digest.slice(0, 16)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 async function stockingRequest(route, data, db, cors) {
@@ -99,26 +89,14 @@ export async function handleApi(request, env) {
       return json({ ok: true, id: body.id }, 200, cors);
     };
 
-    // 同一来源当天配额。重试同一张回执不占配额。
-    const limit = Number(env.PER_SOURCE_LIMIT) || DAILY_PER_SOURCE;
-    const day = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
-    const key = await sourceKey(request, env, day);
-    if (key) {
-      const row = await env.DB.prepare('SELECT n FROM submit_counts WHERE day=?1 AND source=?2').bind(day, key).first();
-      if (row && row.n >= limit) return (await sameReceipt()) ?? json({ error: 'source_daily_limit' }, 429, cors);
-    }
-
     // One atomic SQL statement: a shared daily cap, with conflict handling for retries.
     const inserted = await env.DB.prepare(`INSERT INTO wishes (id,nickname,gift,stocking_id)
       SELECT ?,?,?,? WHERE (SELECT count(*) FROM wishes WHERE created_at >= ${DAY_START_UTC}) < ${DAILY_TOTAL}
       ON CONFLICT(id) DO NOTHING RETURNING id`).bind(body.id, body.nickname, body.gift, body.stockingId).first();
     if (inserted) {
-      if (key) {
-        await env.DB.prepare(`INSERT INTO submit_counts (day,source,n) VALUES (?1,?2,1)
-          ON CONFLICT(day,source) DO UPDATE SET n = n + 1`).bind(day, key).first();
-        // 顺手清掉前一天以前的计数，表始终很小
-        await env.DB.prepare('DELETE FROM submit_counts WHERE day < ?1').bind(day).first();
-      }
+      // 旧版本的临时计数按原保留期限过期。清理失败可以在下一次投递后重试。
+      const day = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
+      await env.DB.prepare('DELETE FROM submit_counts WHERE day < ?1').bind(day).first().catch(() => {});
       return json({ ok: true, id: inserted.id }, 201, cors);
     }
     return (await sameReceipt()) ?? json({ error: 'daily_capacity' }, 429, cors);

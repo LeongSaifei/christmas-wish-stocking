@@ -50,16 +50,30 @@ test('client requires valid confirmed receipt, handles errors and missing config
   assert.equal((await submitWish(config,body,async()=>Response.json({ok:true,id:body.id}))).id,body.id);
 });
 
-test('per-source daily limit: 6th new wish from the same IP is refused, retries still confirm, other IPs unaffected', async () => {
-  const db=new DatabaseSync(':memory:');db.exec(schema);const env=envFor(db);
-  const sent=[];
-  for (let i=0;i<5;i++){const b=valid();sent.push(b);assert.equal((await handleApi(request(b,undefined,'203.0.113.7'),env)).status,201);}
-  assert.equal((await handleApi(request(valid(),undefined,'203.0.113.7'),env)).status,429);
-  assert.equal((await handleApi(request(sent[0],undefined,'203.0.113.7'),env)).status,200);
-  assert.equal((await handleApi(request(valid(),undefined,'198.51.100.2'),env)).status,201);
-  const rows=db.prepare('SELECT source FROM submit_counts').all();
-  assert.ok(rows.every(r=>!r.source.includes('203.0.113')), 'raw IP must not be stored');
-  db.close();
+test('a shared public address can deliver many wishes to the original and personal stockings', async (t) => {
+  const db = new DatabaseSync(':memory:');
+  t.after(() => db.close());
+  db.exec(schema);
+  const env = envFor(db);
+  const headers = { 'Content-Type': 'application/json', Origin: 'https://leongsaifei.github.io', 'CF-Connecting-IP': '203.0.113.7' };
+  const post = (route, body) => handleApi(new Request('https://post.example/api/' + route, {
+    method: 'POST', headers, body: JSON.stringify(body)
+  }), env);
+  const box = { id: crypto.randomUUID(), key: 'a'.repeat(64), name: '圣诞活动' };
+  assert.equal((await post('stockings/create', box)).status, 201);
+  db.exec("INSERT INTO submit_counts VALUES ('2000-01-01', 'old-digest', 5)");
+  const deliveries = Array.from({ length: 60 }, (_, i) => {
+    const body = { ...valid(), nickname: '参与者' + i };
+    if (i % 2) body.stockingId = box.id;
+    return { route: body.stockingId ? 'stockings/wish' : 'wishes', body };
+  });
+  const responses = await Promise.all(deliveries.map(({ route, body }) => post(route, body)));
+  assert.ok(responses.every(response => response.status === 201));
+  const { route, body } = deliveries[59];
+  assert.equal((await post(route, body)).status, 200);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM wishes').get().n, 60);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM wishes WHERE stocking_id = ?').get(box.id).n, 30);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM submit_counts').get().n, 0);
 });
 test('receipt id falls back to getRandomValues outside secure contexts', () => {
   const id=newReceiptId({getRandomValues:(a)=>crypto.getRandomValues(a)});
